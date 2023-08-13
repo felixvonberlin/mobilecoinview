@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="top_bar.css">
+		<link rel="stylesheet" href="loader.css">
+		<link rel="stylesheet" href="index.css">
+		<title>MobileCoin View</title>
+        
+		<script src="js/lodash.min.js"></script>
+		<script type="text/javascript" src="js/loader.js"></script>
+        <script src="js/sigma1.2.1/sigma.core.js"></script>
+        <script src="js/sigma1.2.1/conrad.js"></script>
+        <script src="js/sigma1.2.1/sigma.utils.js"></script>
+        <script src="js/sigma1.2.1/sigma.polyfills.js"></script>
+        <script src="js/sigma1.2.1/sigma.settings.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.dispatcher.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.configurable.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.graph.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.camera.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.quad.js"></script>
+        <script src="js/sigma1.2.1/sigma.classes.edgequad.js"></script>
+        <script src="js/sigma1.2.1/sigma.captors.mouse.js"></script>
+        <script src="js/sigma1.2.1/sigma.captors.touch.js"></script>
+        <script src="js/sigma1.2.1/sigma.renderers.canvas.js"></script>
+        <script src="js/sigma1.2.1/sigma.renderers.webgl.js"></script>
+        <script src="js/sigma1.2.1/sigma.renderers.svg.js"></script>
+        <script src="js/sigma1.2.1/sigma.renderers.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.labels.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.hovers.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.nodes.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edges.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edges.curve.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edges.arrow.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edges.curvedArrow.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edgehovers.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edgehovers.curve.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edgehovers.arrow.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.edgehovers.curvedArrow.js"></script>
+        <script src="js/sigma1.2.1/sigma.canvas.extremities.def.js"></script>
+        <script src="js/sigma1.2.1/sigma.middlewares.rescale.js"></script>
+        <script src="js/sigma1.2.1/sigma.middlewares.copy.js"></script>
+        <script src="js/sigma1.2.1/sigma.misc.animation.js"></script>
+        <script src="js/sigma1.2.1/sigma.misc.bindEvents.js"></script>
+        <script src="js/sigma1.2.1/sigma.misc.bindDOMEvents.js"></script>
+        <script src="js/sigma1.2.1/sigma.misc.drawHovers.js"></script>
+        <script src="js/sigma1.2.1/supervisor.js"></script>
+        <script src="js/sigma1.2.1/worker.js"></script>
+    </head>
+    <body>
+        <div class="underline">
+            <div class="top_bar">
+                MobileCoin View
+            </div>
+        </div>
+        <h3>now</h3>
+        <div>
+            <div id="graph"></div>
+            <div id="tooltipbox">
+                <table>
+                    <tr><td>URL</td><td id="tooltipbox_url"></td></tr>
+                    <tr><td>nation</td><td id="tooltipbox_nation"></td></tr>
+                    <tr><td>latest ledger</td><td id="tooltipbox_latestledger"></td></tr>
+                    <tr><td>block version</td><td id="tooltipbox_blockversion"></td></tr>
+                    <tr><td>minimum fee</td><td id="tooltipbox_minimumfee"></td></tr>
+                    <tr><td>publick key</td><td id="tooltipbox_publickey"></td></tr>
+                </table>
+            </div>
+        </div>
+        <p>This tool helps to understand the composition of the <a href="https://mobilecoin.com/">MobileCoin Network</a>. Therefore, you can interactively inspect the nodes in the network above. Below there are some pie charts showing the latest state of the nodes' location and blockchain status.</p>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+                <div id="gchart_active_nodes"></div>
+                <div id="gchart_nations"></div>
+                <div id="gchart_minimum_fee"></div>
+                <div id="gchart_latest_block"></div>
+        </div><br>
+        
+        <h3>In-depth FBAS analysis of one snapshot</h3>
+
+        <div class="control-box">
+            Merge nodes by grouping (nodes by the same grouping will count as 1):
+            <form name="merge">
+                <input name="merge_box" id="no-merge" type="radio" value="none" checked onclick="determine_merge_selection(); maybe_change_analysis()">
+                <label for="no-merge">Raw nodes (do not merge)</label>
+                <input name="merge_box" id="merge-orgs" type="radio" value="orgs" onclick="determine_merge_selection(); maybe_change_analysis()">
+                <label for="merge-orgs">Organizations<small>*</small></label>
+                <input name="merge_box" id="merge-isps" type="radio" value="isps" onclick="determine_merge_selection(); maybe_change_analysis()">
+                <label for="merge-isps">ISPs<small>*</small></label>
+                <input name="merge_box" id="merge-ctry" type="radio" value="ctry" onclick="determine_merge_selection(); maybe_change_analysis()">
+                <label for="merge-ctry">Countries</label>
+            </form>
+            <small>* These groupings are currently maintained manually and might be outdated.</small>
+        </div>
+        
+        <p>
+            Interactive analyses of the <a href="https://mobilecoin.com/">MobileCoin</a> Federated Byzantine Agreement System (FBAS) using <a href="https://github.com/wiberlin/fbas_analyzer"><code>fbas_analyzer</code></a> compiled to <a href="https://webassembly.org/">WebAssembly</a>.
+            The analyses are performed in your browser using <a href="https://github.com/wiberlin/mc-crawler">crawl</a> data downloaded on demand from our <a href="https://api.crawler.mc.trudi.group/v1/">database</a>.
+            This is mostly taken and slightly modified from <a href="http://localhost:1089/mobilecoin_analysis/index.html">the MobileCoin FBAS Analysis Page</a>, provided by <a href="https://www.weizenbaum-institut.de/en/research/rg17/">Weizenbaum Research Group 17</a>, for having a more complete overview.
+        </p>
+
+        <div class="control-box">
+            <input type="date" id="date" name="date" min="2019-07-01">
+            <input type="time" id="time" name="time" value="00:00">
+            <button id="submit-btn" type="button" onclick="get_and_analyze_stellarbeat_data_via_button()">
+                Analyze!
+            </button>
+            <script>
+                var last_merge_state = document.querySelector('input[name=merge_box]:checked').value;
+                window.onload = function() {
+                    var d = new Date();
+                    var hour = d.getHours(),
+                    min  = d.getMinutes();
+                    hour = (hour < 10 ? "0" : "") + hour;
+                    min = (min < 10 ? "0" : "") + min;
+                    var dd = String(d.getDate()).padStart(2, '0');
+                    var mm = String(d.getMonth() + 1).padStart(2, '0');
+                    var yyyy = d.getFullYear();
+                    var current_time = hour + ":" + min;
+                    var today = new Date(yyyy + '-' + mm +'-' + dd);
+                    document.getElementById('date').valueAsDate = today;
+                    document.getElementById('time').value = current_time;
+                    document.getElementById('no-merge').checked = true;
+                    last_merge_state = document.querySelector('input[name=merge_box]:checked').value;
+                }
+                function merge_selection() {
+                  for (i = 0; i < document.merge.merge_box.length; i++) {
+                      if (document.merge.merge_box[i].checked) {
+                          return i;
+                      }
+                   }
+                }
+            </script>
+        </div>
+        <div id="results-box"></div>
+        <h3>history</h3>
+        <p>
+            Below some graphs show historical data of the shown features. You can control the time span with the selection box on the right.
+        </p>
+        <select class="rightalign" id="time_selector">
+            <option value="day"   >last day</option>
+            <option value="week"  >last week</option>
+            <option value="month" >last month</option>
+            <option value="month3">last three months</option>
+            <option value="year"  >last year</option>
+            <option value="all"   >all</option>
+        </select>
+        <div id="gchart_blockheight_graph"></div>
+        <p class="paddedp">
+            This graph shows the historical development of the block height. The block height describes how many blocks got verified and added to the blockchain. In general this is a strictly monotonic increasing function.
+            But maybe you are able to see some time spans in which the more blocks will get validated than others.
+        </p>
+        <div id="gchart_reachability_graph"></div>
+        <p class="paddedp">
+            This graph shows the reachability of all crawled nodes in the selected time span. If all nodes were reachable we will only see one graph. In case that some nodes are or were offline we get a second graph to see which shows us how many were offline.
+        </p>
+        <div id="gchart_nations_graph"></div>
+        <p class="paddedp">
+            In addition to the reachablity graph this one distinguishies where the nodes are from. If some nodes a known but not reachable, e.g. because some other nodes announced them as a neighbor, it's likely that they going to be labeled as &raquo;unknown&laquo; Only when nodes completely disappear, the total count will decrease here.  
+        </p>
+        <div id="gchart_fees_graph"></div>
+        <p class="paddedp">
+            Last but not least this graph shows the necessarily minium transaction fee. This graph should show a flat line at the time of writing. For the future, a mechanism is proposed to easily change the transaction fee. Nowadays we would need to restart the network completely but according to <a href="https://github.com/mobilecoinfoundation/mcips/blob/main/text/0001-dynamic-fees-v1.md"><code>0001-dynamic-fees-v1.md</code></a> it may will change some day.
+        </p>
+        
+        <div id="overlay"><div class="center loader"></div></div>
+        <script type="text/javascript" src="utils.js"></script>
+        <script type="text/javascript" src="presentation.js"></script>
+        <script type="text/javascript" src="index.js"></script>
+        
+        <script type="text/javascript" src="ws/data_handler.js"></script>
+        <script type="text/javascript" src="ws/util.js"></script>
+        <script type="module">
+            import init, { analyze_minimal_quorums, analyze_minimal_splitting_sets, analyze_minimal_blocking_sets, analyze_top_tier, analyze_symmetric_top_tier, init_panic_hook} from './ws/stellar_analysis.js';
+            async function initialise() {
+                await init();
+                init_panic_hook();
+            }
+            initialise();
+            async function run_mqs(fbas, orgs, should_merge) {
+                var results = analyze_minimal_quorums(fbas, orgs, should_merge)
+                return results
+            }
+            window.run_mqs = run_mqs
+            async function run_mss(fbas, orgs, should_merge) {
+                var results = analyze_minimal_splitting_sets(fbas, orgs, should_merge)
+                return results
+            }
+            window.run_mss = run_mss
+            async function run_mbs(fbas, orgs, faulty, should_merge) {
+                var results = analyze_minimal_blocking_sets(fbas, orgs, faulty, should_merge)
+                return results
+            }
+            window.run_mbs = run_mbs
+            async function run_tt(fbas, orgs, should_merge) {
+                var results = analyze_top_tier(fbas, orgs, should_merge)
+                return results
+            }
+            window.run_tt = run_tt
+            async function run_symmetric_tt(fbas, orgs, should_merge) {
+                var results = analyze_symmetric_top_tier(fbas, orgs, should_merge)
+                return results
+            }
+            window.run_symmetric_tt = run_symmetric_tt
+        </script>
+    </body>
+</html>
