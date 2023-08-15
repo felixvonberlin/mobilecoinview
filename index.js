@@ -14,8 +14,8 @@ function fetchApiData(start, end) {
         }
     }
     for (let day = start; day <= end; increase(day)) {
-        //promises.push(fetch("https://api.crawler.mc.trudi.group/v1/" +day.toISOString()).then((response) => (response.json())));
-        promises.push(fetch("http://192.168.178.10:5000/v1/" +day.toISOString()).then((response) => (response.json())));
+        promises.push(fetch("https://api.crawler.mc.trudi.group/v1/" +day.toISOString()).then((response) => (response.json())));
+        //promises.push(fetch("http://192.168.178.10:5000/v1/" +day.toISOString()).then((response) => (response.json())));
     }
     
     Promise.all(promises).then(function (data) {
