@@ -57,8 +57,8 @@ function createNodeGraph(jData) {
 
 function presentHistoricalData(dataSheet) {
     makeGLineChart("gchart_nations_graph", aggregateTimeSeries(getNodesTimeSeries(dataSheet, function (data){ return data.geoData.countryName})), "nations");
-    makeGLineChart("gchart_blockheight_graph", (getTimeSeries(dataSheet, function(data) {return data.latestLedger;})), "block height", "long");
-    makeGLineChart("gchart_fees_graph", (getTimeSeries(dataSheet, function(data) {return data.minimumFee/1000000;})), "minimum transaction fee", "# µMOB");
+    makeGLineChart("gchart_blockheight_graph", (getTimeSeries(dataSheet, function(data) {return data.networksLatestLedger;})), "block height", "long");
+    makeGLineChart("gchart_fees_graph", (getTimeSeries(dataSheet, function(data) {return data.networksMinimumFee/1000000;})), "minimum transaction fee", "# µMOB");
     makeGLineChart("gchart_reachability_graph", aggregateTimeSeries(getNodesTimeSeries(dataSheet, function (data){ return data.active ? "reachable" : "not reachable";})), "reachable nodes");
 }
 
